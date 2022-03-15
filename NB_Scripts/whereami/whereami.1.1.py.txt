@@ -1,0 +1,106 @@
+#!/usr/bin/python
+#
+# whereami.py
+#
+# This script reports back different things depending on what domain it's on
+#
+# Created: Terry Carter
+# Date: 1/16/2019
+#
+version = "1.1"
+
+# Version information
+# v 1.0 Origional
+# v 1.1 Added tape library test
+
+########################################################################
+#
+# Hostname
+#  Gets the host name for where this is ran
+#
+# Input: None
+#  Calls: socket.gethostname
+# Output: Returns string of the host name
+#
+########################################################################
+
+
+def hostname():
+    import socket
+    my_host_name = socket.gethostname()
+    return my_host_name
+
+
+
+########################################################################
+#
+# Am_I_FOD
+#  Is this host in a FOD area
+#
+# Input: None
+# Output: Returns boolean based on if it's in a FOD area
+#
+########################################################################
+
+
+def am_i_fod():
+    host_name = hostname()
+    host_dict = {
+        "adc094nbadmin01": False, "adc08nbuadm01": False,  "adc33nbadm01": True,
+        "adc95nbadm01": True,     "cgydc01nbadm01": False, "epdc01nbadm01": False,
+        "llg07nbadm01": False,    "rmdc02nbuadm01": False, "rmdc05nbadm01": True,
+        "sldc05nbuadm01": False,  "sldc42nbadm01": True,   "sydc01nbadm01": False,
+        "trdc01nbadm01": False,   "tvp02nbadm01": False
+    }
+
+    return host_dict[host_name]
+
+
+########################################################################
+#
+# Has_tape_library
+#  Does this domain have a direct attached tape library?
+#
+# Input: None
+# Output: Returns boolean if it has a direct attached NB Library
+#
+########################################################################
+
+
+def has_tape_library():
+    host_name = hostname()
+    host_dict = {
+        "adc094nbadmin01": True, "adc08nbuadm01": True,   "adc33nbadm01": False,
+        "adc95nbadm01": False,   "cgydc01nbadm01": False, "epdc01nbadm01": False,
+        "llg07nbadm01": True,    "rmdc02nbuadm01": True,  "rmdc05nbadm01": False,
+        "sldc05nbuadm01": True,  "sldc42nbadm01": False,  "sydc01nbadm01": False,
+        "trdc01nbadm01": False,  "tvp02nbadm01": True
+    }
+
+    return host_dict[host_name]
+
+########################################################################
+#   __Main__
+# Run only if local, not if called.
+########################################################################
+
+
+if __name__ == '__main__':                              # Execute only if ran locally
+### Get host name
+    print "Hostname", hostname()
+
+### Get FOD status
+    am_fod = am_i_fod()
+    if am_fod:
+        print "I'm in a FOD server"
+    else:
+        print "I'm not in a FOD server"
+
+### Get tape library status
+    if has_tape_library():
+        print "I have a NB tape library"
+    else:
+        print "I don't have a library attached"
+
+
+# end whereami.py
