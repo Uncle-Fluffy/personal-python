@@ -1,0 +1,37 @@
+#!/usr/bin/python
+# Name of the script - nbassign_robertga
+# Purpose -  Creates policies, schedule for Windows client's disk backups in Net# backup
+# Date - 09/27/17
+
+print " Hello Customer "
+
+import os, sys, csv, re, subprocess
+#print os.getcwd()
+
+print(os.getcwd() + "/ssrschedules")
+
+
+#Open file
+path = "/home/robertga/ssrschedules/"
+dirs = os.listdir( path )
+
+for file in dirs:
+        print file
+input_file = raw_input("Enter the filename?")
+print "You Answered:", input_file
+
+file_path = path+input_file
+print file_path
+
+input_file_object = open(file_path,'r')
+for line in input_file_object:
+        if re.match("Free",line):
+                pass
+        else:
+                line_data = line.split(",")
+#		print line_data[0]
+		print ("./bpplclients Test_local -M adc094nbadmin01 -add linedata-nfs Windows Windows"%(line_data))
+# print line_data[0],line_data[2],line_data[3],line_data[10]
+#       print("line_data is of type",type(line_data))
+input_file_object.close()
+

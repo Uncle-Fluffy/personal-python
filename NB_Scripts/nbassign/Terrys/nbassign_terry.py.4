@@ -1,0 +1,26 @@
+#!/usr/bin/python
+# nbassign_terry
+# tscarter
+
+# This script scrapes an input .csv file, 
+#	reads it line by line,
+#	picks out the parts we need
+#	determines the host name, the time for full backukps and day of week
+#	determines what policy to use
+#	formats the output of the assign command, the host name and policy
+# Sept 27, 2017
+
+#init
+import subprocess
+file_location = "/home/tscarter/ssrschedules"
+
+print "Hello World"
+print
+subprocess.call (["ls", "-l", file_location])
+
+print
+
+input_file = raw_input("File Name?: ")
+print "You typed: ", input_file
+
+#end
