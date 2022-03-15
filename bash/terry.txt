@@ -1,0 +1,186 @@
+#! /bin/bash
+# Created by Terry Carter
+
+# This function echoes an error message
+# Parameters: $@ - the error message
+# Inputs:     None
+# Outputs:    Error message to stderror
+# Returns:    Does not return
+function error {
+  printf "ERROR: $@\n" 1>&2
+  exit 1
+}
+
+# This function returns the list of valid images
+# Parameters: None
+# Inputs:     None
+# Outputs:    IMAGE_LIST - list of valid image names
+# Returns:    Nothing if OK, does not return if error
+function get-image-list {
+  # Right now this is hardcoded
+  # Is there a way to programatically determined this?
+  IMAGE_LIST='\
+             "images1"\
+             "images2"\
+             "images3"\
+             "images4"\
+             "images5"\
+             "images6"\
+             "images7"\
+             "images8H"\
+             "images8O"\
+             "images9"\
+             "images20"\
+             "images21"\
+             "images22"\
+             "images23"\
+             "images24"\
+             "images25"\
+             "images26"\
+             "images27"\
+             '
+}
+
+# This function gets the name of the image to be cleaned
+# either from the command line or by prompting for it.
+# Parameters: $@ - the command line
+# Inputs:     None
+# Outputs:    IMAGE - name of image to be cleaned
+# Returns:    Nothing if OK, does not return if error
+function get-image {
+  unset IMAGE
+  get-image-list
+  if [[ -z $1 ]]; then
+    PS3='Which image would you like to clean?: '
+    select IMAGE in ${IMAGE_LIST//\"/} do;
+      [[ -n $IMAGE ]] && break
+    done
+  else
+    if [[ -z $( echo $IMAGE_LIST | egrep "\"$1\"" ) ]]; then
+      error "Image ($1) not valid"
+    else
+      IMAGE=$1
+  fi
+  printf "\n$IMAGE selected for cleaning\n"
+}
+
+# This function finds all jobs from 6 weeks ago who have completed
+# Parameters: None
+# Inputs:     None
+# Outputs:    results in /tmp/lsj.txt
+# Returns:    Nothing if OK, does not return if error
+function get-completed-jobs {
+  obtool lsj -A --from $( date --date="6 weeks ago" +"%Y/%m/%d" ) | grep completed > /tmp/lsj.txt
+  [[ "$?" != "0" ]] && error "get-completed-jobs failed"
+}
+
+# This function finds all backups for a given the dataset
+# Parameters: $1 - dataset to look for
+# Inputs:     None
+# Outputs:    results in /tmp/data.txt
+# Returns:    Nothing if OK, does not return if error
+function lookup-dataset {
+  local LIST1=$( obtool lsds $1 | grep -v 'Dataset directory' )
+  [[ "$?" != "0" ]] && error "lookup-dataset failed (obtool)"
+  local LIST2
+  local I
+  local J
+  rm -f /tmp/lsj.dat
+  for I in $LIST; do
+    echo $I>/tmp/lsj.dat
+    LIST2=$( cat /tmp/lsj.txt | grep "$I[[:space:]]" | awk '{print $8}' | awk -F"." {'print $1'} | awk -F'/' {'print $1$2$3'} )
+    [[ "$?" != "0" ]] && error "lookup-dataset failed (cat)"
+    for J in $LIST2; do
+      echo "(( $( date --date=$( date +%Y%m%d ) +%s ) - $( date --date=$J +%s ) )) / (60*60*24)" | bc > /tmp/lsj.dat
+    done
+    echo
+  done
+}
+
+# This function find the most recent back up date
+# (result is +2 days because backup may have been done at 00:01 or at 23:59, and don't use today either)
+# Parameters: None
+# Inputs:     /tmp/ljs.dat
+# Outputs:    results echoed to stdout
+# Returns:    Nothing if OK, does not return if error
+function get-most-recent {
+  local NAME=""
+  local MIN=""
+  local LINE
+  cat /tmp/ljs.dat | while [[ read LINE ]]; do
+    case "$LINE" in
+      [0-9]+ ) if [[ -z $MIN ]]; then
+                 MIN=$LINE
+               else
+                  [[ $MIN -gt $LINE ]] && MIN=$LINE
+               fi;;
+      * )      if [[ -z $NAME]]; then
+                 let MIN+=2
+                 printf "$NAME\n$MIN"
+                 MIN=""
+                 NAME=$LINE
+               fi;;
+    esac
+  done
+  [[ -z $MIN ]] && error "get-shortest failed"
+  printf "$NAME\n$MIN"
+  return 0
+}
+
+# Looks up all of the datasets and sub folders
+# Parameters: $1 - Dataset direcory
+#             $2 - Drive letter
+# Inputs:     None
+# Outputs:    DOS/WIN delete command echoed to stdout
+# Returns:    Nothing if OK, does not return if error
+function format-for-delete {
+  local LIST1=$( obtool lsds $1 | grep -v 'Dataset directory' | awk {'print $1'} )
+  [[ "$?" != "0" ]] && error "format-for-delete failed (obtool lsds)"
+  local LIST2
+  local I
+  local J
+  for I in $LIST; do
+    LIST2=$( obtool catds "$1/$I" | grep -v 'include host' | awk -F'/' {'print $5'} )
+    [[ "$?" != "0" ]] && error "format-for-delete failed (obtool catds)"
+    for J in $LIST2; do
+      echo "cscript delete_old_files.vbs $2:/'$J' 2 /S /LOG:Images5_'$J'_folder_nov11th.txt'
+    done
+    echo
+  done
+}
+
+# This function cleans an image
+# Parameters: $1 - image to be cleaned
+# Inputs:     None
+# Outputs:    None
+# Returns:    Nothing if OK, does not return if error
+function clean-image {
+  # Get the image line from the configuration file
+  local IMAGE_LINE=$( cat /home/tscarter/images.txt | grep $IMAGE[[:space:]] )
+
+  # Strip out the windows drive letter
+  local DRIVE_LETTER=$( echo $IMAGE_LINE | awk '{print $3}' )
+  echo "Drive Letter: " $DRIVER_LETTER"
+
+  # Strip out the Dataset Directory name
+  local DATASET_DIRECTORY=$( echo $IMAGE_LINE | awk '{print $4}')
+  echo "Dataset Directory: " $DATASET_DIRECTORY
+
+  # Get list of completed jobs
+  get-completed-jobs
+
+  # Find assocaited backups
+  lookup-datasets $DATASET_DIRECTORY
+
+  # Find most recent backup
+  get-shortest
+
+  # Here goes ...
+  format-for-delete $DATASET_DIRECTORY $DRIVE_LETTER
+}
+
+# Get the image to be cleaned
+get-image $@
+
+# Clean the image
+clean-image $IMAGE
