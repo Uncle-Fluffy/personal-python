@@ -47,3 +47,11 @@ int_manual_date = datetime.datetime(year2, month2, day2)
 print (int_manual_date)
 print (str(int_manual_date) + "+00:00")             # 2022-03-16 00:00:00+00:00
 print()
+
+print('Figure the following day from an int to date')
+year3 = 2022
+month3 = 3
+day3 = 16
+int_next_date = str(datetime.datetime(year3, month3, day3) + datetime.timedelta(days=1)) + "+00:00"
+print(int_next_date)
+print()
