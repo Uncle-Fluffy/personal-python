@@ -31,3 +31,18 @@ def GetDate():
 
     elif len(sys.argv) == 4:    # if just the start date is given
         year = int(sys.argv[1])
+                month = int(sys.argv[2])
+        day = int(sys.argv[3])
+        start_date = utc.localize(datetime.datetime(year, month, day))
+        end_date = start_date + datetime.timedelta(days=1)
+
+    else:   # No date given - assume yesterday
+        start_date = utc.localize(datetime.datetime.today().replace(hour=0,minute=0,second=0,microsecond=0) - datetime.timedelta(days=1)) # start_date: 2022-02-24 00:00:00+00:00
+        end_date = utc.localize(datetime.datetime.today().replace(hour=0,minute=0,second=0,microsecond=0)) #end_date: 2022-02-25 00:00:00+00:00
+
+    # Print year, month, day, hour, minute, second, microsecond, and tzinfo.
+    print('start_date: {}'.format(start_date))
+    print('end_date: {}'.format(end_date))
+
+if __name__ == '__main__':
+    GetDate()
