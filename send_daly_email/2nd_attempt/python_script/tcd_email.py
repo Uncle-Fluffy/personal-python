@@ -18,22 +18,17 @@ def GetDate():
     print ("Argument List:", str(sys.argv))
  
     if len(sys.argv) == 7:      # if start and end dates are given
-        # year = int(sys.argv[1])
-        # month = int(sys.argv[2])
-        # day = int(sys.argv[3])
-        year = str(sys.argv[1])
-        month = str(sys.argv[2])
-        day = str(sys.argv[3])
-        start_date_string = year + ' ' + month + ' ' + day
-    #     start_date = utc.localize(datetime.datetime(year, month, day))
-        start_date = (time.strftime('%Y-%m-%d', start_date_string) + " 00:00:00+00:00")
- 
+        year = int(sys.argv[1])
+        month = int(sys.argv[2])
+        day = int(sys.argv[3])
+        start_date = (str(datetime.datetime(year, month, day)) + "+00:00")
+        print(start_date)
+
         year2 = int(sys.argv[4])
         month2 = int(sys.argv[5])
         day2 = int(sys.argv[6])
-        end_date_string = year2 + ' ' + month2 + ' ' + day2
-    #     end_date = utc.localize(datetime.datetime(year2, month2, day2))
-        end_date = (time.strftime('%Y-%m-%d', end_date_string) + " 00:00:00+00:00")
+        end_date = (str(datetime.datetime(year2, month2, day2)) + "+00:00")
+        print(end_date)
  
     elif len(sys.argv) == 4:    # if just the start date is given
         year = int(sys.argv[1])
