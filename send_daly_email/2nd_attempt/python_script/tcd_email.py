@@ -10,9 +10,17 @@ import datetime     #
 import time
 import sys          # 
  
+########################################################################
+# lambda_handler
+########################################################################
+  
 def lambda_handler(event, context):
     GetDate()
- 
+
+########################################################################
+# GetDate()
+########################################################################
+
 def GetDate():
     #print ("Number of arguments:", len(sys.argv), "arguments")
     #print ("Argument List:", str(sys.argv))
@@ -43,5 +51,11 @@ def GetDate():
     print('start_date: {}'.format(start_date))
     print('end_date: {}'.format(end_date))
  
+
+ 
+########################################################################
+# __main__
+########################################################################
+
 if __name__ == '__main__':
     GetDate()
