@@ -159,12 +159,11 @@ def get_new_filenames(s3, start_date, end_date):
                         }
                     )
                     files_found_txt+= (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
-                    print('flag1')
                     for i in range(11 - (len(human_readable_size(obj_size)))): # pre-pad for size
                         files_found_txt+= ' '
                     files_found_txt+= human_readable_size(obj_size) # Add file size
+                    files_found_txt+= ' ' + object_name # add file name
                     files_found_txt+= '\r\n' # Add carriage return/line feed
-                    print('flag2')
 
                 except Exception as e:
                     print("Exception***")
@@ -174,8 +173,8 @@ def get_new_filenames(s3, start_date, end_date):
                 count = count + 1
 
     print('count: {}'.format(count))
-    print('files_found', files_found)
-    print('files_found_txt')
+    #print('files_found', files_found)
+    #print('files_found_txt')
     print(files_found_txt)
 
     # future
