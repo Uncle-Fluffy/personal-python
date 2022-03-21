@@ -6,9 +6,10 @@
 ########################################################################
 # Init / Include
 ########################################################################
+import sys          # For user input when ran directly
 import datetime     # For date calculations        
-import sys          # 
-import boto3
+import time         # For current date/time calculations
+import boto3        # For access to AWS
 
 ########################################################################
 # lambda_handler
@@ -16,6 +17,7 @@ import boto3
   
 def lambda_handler(event, context):
     GetDate()
+    boto3_session_lambda()
 
 ########################################################################
 # GetDate()
@@ -50,12 +52,35 @@ def GetDate():
     # Print year, month, day, hour, minute, second, microsecond, and tzinfo.
     print('start_date: {}'.format(start_date))
     print('end_date: {}'.format(end_date))
- 
 
- 
+ ########################################################################
+# boto3_session_main
+########################################################################
+def boto3_session_main():
+    bucket_name = 'exptransmission'
+
+    #session = boto3.session.Session(profile_name=profile)
+    session = boto3.Session(profile_name='exp-devsecops')
+    s3 = session.client('s3', region_name='us-west-2')
+    sns = session.client('sns', region_name='us-east-1')
+    print('boto3_session_main')
+    print(s3)
+    print(type(s3))
+
+ ########################################################################
+# boto3_session_lambda
+########################################################################
+def boto3_session_lambda():
+    #region = 'us-west-2'
+    bucket_name = 'exptransmission'
+    s3 = boto3.client('s3', region_name='us-west-2')
+    sns = boto3.client('sns', region_name='us-east-1')
+    print('boto3_session_lambda')
+
 ########################################################################
 # __main__
 ########################################################################
 
 if __name__ == '__main__':
     GetDate()
+    boto3_session_main()
