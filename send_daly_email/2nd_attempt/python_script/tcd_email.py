@@ -176,17 +176,32 @@ def get_new_filenames(s3, start_date, end_date):
     #print('files_found', files_found)
     #print('files_found_txt')
     print(files_found_txt)
+    return(files_found_txt)
 
-    # future
-    # change
-    #   home_path = '/tmp/output-' + str(cur_date) + '.csv' 
-    #   f = open(home_path, 'a')
-    # to this
-    # with open('/etc/passwd') as f:
-    #   for line in f:
-    #     print(line)
+########################################################################
+# send_email
+########################################################################
 
+def send_email(sns, files_found_txt):
+    topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
+    #topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
+    print('topic_arn: {}'.format(topic_arn))
+    subject = 'Wells Fargo TCD Dropbox'
+    #message = output_string
+    message = files_found_txt
 
+    # if no files, then send email with no files
+    if len(files_found_txt) == 0:
+        message = 'There are no files for the past 24 hours.'
+
+    #response = client.publish(
+    response = sns.publish(
+        TopicArn=topic_arn,
+        Message=message,
+        Subject=subject,
+    )
+    print(files_found_txt)
+    #pprint.pprint(response)
 
 ########################################################################
 # __main__
@@ -197,4 +212,5 @@ if __name__ == '__main__':
     print('start_date3:', start_date)
     print('end_date3:', end_date)
     s3, sns = boto3_session_main()
-    get_new_filenames(s3, start_date, end_date)
+    files_found_txt = get_new_filenames(s3, start_date, end_date)
+    send_email(sns, files_found_txt)
