@@ -111,12 +111,12 @@ def get_new_filenames(s3, start_date, end_date):
                 idx = obj_key.rfind('/')
                 object_name = obj_key[idx + 1:len(obj_key)] 
                 try:
-                    files_found_txt+= (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
+                    files_found_txt += (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
                     for i in range(11 - (len(human_readable_size(obj_size)))): # pre-pad for size
-                        files_found_txt+= ' '
-                    files_found_txt+= human_readable_size(obj_size) # Add file size
-                    files_found_txt+= ' ' + object_name # add file name
-                    files_found_txt+= '\r\n' # Add carriage return/line feed
+                        files_found_txt += ' '
+                    files_found_txt += human_readable_size(obj_size) # Add file size
+                    files_found_txt += ' ' + object_name # add file name
+                    files_found_txt += '\r\n' # Add carriage return/line feed
 
                 except Exception as e:
                     print("Exception***")
@@ -145,9 +145,9 @@ def send_email(sns, files_found_txt):
         message = 'There are no files for the past 24 hours.'
 
     response = sns.publish(
-        TopicArn=topic_arn,
-        Message=message,
-        Subject=subject,
+        TopicArn = topic_arn,
+        Message = message,
+        Subject = subject
     )
 
 ########################################################################
