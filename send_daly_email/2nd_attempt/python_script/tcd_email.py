@@ -1,7 +1,7 @@
 # This script scrapes an S3 bucket looking for files that were save in a particular date range
 # it then reports them to a SNS topic
 # Core code from Connor Reid
-# 3/16/2022 Created by Terry Carter
+# 3/16/2022 Modified by Terry Carter
  
 ########################################################################
 # Init / Include
@@ -91,7 +91,6 @@ def get_new_filenames(s3, start_date, end_date):
     paginator = s3.get_paginator('list_objects')
     page_iterator = paginator.paginate(Bucket=bucket_name)
     count = 0
-    files_found = []
     files_found_txt = ""
     page_list = []
 
@@ -100,34 +99,16 @@ def get_new_filenames(s3, start_date, end_date):
         if 'Contents' in page:
             page_list.append(page)
 
-    # print number of pages
-    # print('len(page_list): {}'.format(len(page_list)))
-
     # do the search
     for page in page_list:
-        # print('count: {}'.format(count))
         for obj in page['Contents']:
             obj_size = obj['Size']
             last_modified = obj['LastModified']
-            #print('last_modified', last_modified)
-            #print(type(last_modified))
             if start_date < last_modified < end_date:
-                # print('last_modified: {}'.format(last_modified))
-                # print('obj_size:', human_readable_size(obj_size)) # toubleshooting line
                 obj_key = obj['Key']
-                # print('obj_key: {}'.format(obj_key)) # toubleshooting line
                 idx = obj_key.rfind('/')
                 object_name = obj_key[idx + 1:len(obj_key)] 
-                #print('object_name: {}'.format(object_name)) # toubleshooting line
                 try:
-                    # files_found.append(
-                    #     {
-                    #         'last_modified': last_modified,
-                    #         #'obj_size': size(obj_size, system=alternative),
-                    #         'obj_size': obj_size,
-                    #         'object_name': object_name,
-                    #     }
-                    # )
                     files_found_txt+= (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
                     for i in range(11 - (len(human_readable_size(obj_size)))): # pre-pad for size
                         files_found_txt+= ' '
@@ -143,7 +124,7 @@ def get_new_filenames(s3, start_date, end_date):
                 count = count + 1
 
     print('count: {}'.format(count))
-    #print(files_found_txt)
+    print(files_found_txt)
     return(files_found_txt)
 
 ########################################################################
@@ -166,7 +147,6 @@ def send_email(sns, files_found_txt):
         Message=message,
         Subject=subject,
     )
-    print(files_found_txt)
 
 ########################################################################
 # __main__
