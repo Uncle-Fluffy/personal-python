@@ -1,6 +1,6 @@
 # This script scrapes an S3 bucket looking for files that were save in a particular date range
 # it then reports them to a SNS topic
- 
+# Core code from Connor Reid
 # 3/16/2022 Created by Terry Carter
  
 ########################################################################
@@ -24,10 +24,6 @@ def lambda_handler(event, context):
 ########################################################################
 
 def GetDate():
-    #print ("Number of arguments:", len(sys.argv), "arguments")
-    #print ("Argument List:", str(sys.argv))
-    tz = datetime.timezone.utc
-
     if len(sys.argv) == 7:      # if start and end dates are given
         year = int(sys.argv[1])
         month = int(sys.argv[2])
@@ -43,24 +39,16 @@ def GetDate():
         year = int(sys.argv[1])
         month = int(sys.argv[2])
         day = int(sys.argv[3])
-        #start_date = (str(datetime.datetime(year, month, day)) + "+00:00") # this gives a string output
         start_date = datetime.datetime.strptime((str(datetime.datetime(year, month, day)) + "+00:00"), '%Y-%m-%d %H:%M:%S%z')
-        #end_date = str(datetime.datetime(year, month, day) + datetime.timedelta(days=1)) + "+00:00" # this gives a string output
         end_date = datetime.datetime.strptime((str(datetime.datetime(year, month, day) + datetime.timedelta(days=1)) + "+00:00"), '%Y-%m-%d %H:%M:%S%z')
 
     else:   # No date given - assume yesterday
-        #end_date = (time.strftime('%Y-%m-%d', time.gmtime()) + " 00:00:00+00:00")
-        #start_date = (time.strftime('%Y-%m-%d', time.gmtime(time.time() - 86400))+ " 00:00:00+00:00")
         start_date = datetime.datetime.strptime((time.strftime('%Y-%m-%d', time.gmtime(time.time() - 86400))+ " 00:00:00+00:00"), '%Y-%m-%d %H:%M:%S%z')
         end_date = datetime.datetime.strptime((time.strftime('%Y-%m-%d', time.gmtime()) + " 00:00:00+00:00"), '%Y-%m-%d %H:%M:%S%z')
 
     # Print year, month, day, hour, minute, second, microsecond, and tzinfo.
-
     print('start_date: {}'.format(start_date))
-    print(type(start_date))
     print('end_date: {}'.format(end_date))
-    print(type(end_date))
-    # end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S%z') # This works to convert string into datetime.datetime
     return start_date, end_date
 
 #########################################################################
@@ -68,15 +56,9 @@ def GetDate():
 #########################################################################
 
 def boto3_session_main():
-    bucket_name = 'exptransmission'
-
-    #session = boto3.session.Session(profile_name=profile)
     session = boto3.Session(profile_name='exp-devsecops')
     s3 = session.client('s3', region_name='us-west-2')
     sns = session.client('sns', region_name='us-east-1')
-    # print('boto3_session_main')
-    # print(s3)
-    # print(type(s3))
     return s3, sns
 
 #########################################################################
@@ -84,11 +66,9 @@ def boto3_session_main():
 #########################################################################
 
 def boto3_session_lambda():
-    #region = 'us-west-2'
     bucket_name = 'exptransmission'
     s3 = boto3.client('s3', region_name='us-west-2')
     sns = boto3.client('sns', region_name='us-east-1')
-    # print('boto3_session_lambda')
     return s3, sns
 
 ########################################################################
@@ -100,7 +80,6 @@ def human_readable_size(size, decimal_places=0):
         if size < 1024.0 or unit == 'PB':
             break
         size /= 1024.0
-    #return f"{size:.{decimal_places}f} {unit}"
     return str(f"{size:.{decimal_places}f} {unit}")
 
 ########################################################################
@@ -108,8 +87,6 @@ def human_readable_size(size, decimal_places=0):
 ########################################################################
 
 def get_new_filenames(s3, start_date, end_date):
-    print('start_date4:', start_date)
-    print('end_date4:', end_date)
     bucket_name = 'exptransmission'
     paginator = s3.get_paginator('list_objects')
     page_iterator = paginator.paginate(Bucket=bucket_name)
@@ -124,40 +101,33 @@ def get_new_filenames(s3, start_date, end_date):
             page_list.append(page)
 
     # print number of pages
-    print('len(page_list): {}'.format(len(page_list)))
+    # print('len(page_list): {}'.format(len(page_list)))
 
     # do the search
     for page in page_list:
-        print('count: {}'.format(count))
+        # print('count: {}'.format(count))
         for obj in page['Contents']:
             obj_size = obj['Size']
             last_modified = obj['LastModified']
             #print('last_modified', last_modified)
             #print(type(last_modified))
             if start_date < last_modified < end_date:
-                print() # blank line for clarity
-                print('last_modified: {}'.format(last_modified))
-                #print('obj_size: {}'.format(size(obj_size, system=alternative))) # toubleshooting line
-                print('obj_size:', human_readable_size(obj_size)) # toubleshooting line
+                # print('last_modified: {}'.format(last_modified))
+                # print('obj_size:', human_readable_size(obj_size)) # toubleshooting line
                 obj_key = obj['Key']
-                print('obj_key: {}'.format(obj_key)) # toubleshooting line
+                # print('obj_key: {}'.format(obj_key)) # toubleshooting line
                 idx = obj_key.rfind('/')
-                object_name = obj_key[idx + 1:len(obj_key)]
-                print('object_name: {}'.format(object_name))
-                #r1 = object_name.split('_') # finds the box used
-                #print(len(r1)) # toubleshooting line
-                #print(r1) # toubleshooting line
+                object_name = obj_key[idx + 1:len(obj_key)] 
+                #print('object_name: {}'.format(object_name)) # toubleshooting line
                 try:
-                    #s1 = r1[2]
-                    #print('s1', s1) # toubleshooting line
-                    files_found.append(
-                        {
-                            'last_modified': last_modified,
-                            #'obj_size': size(obj_size, system=alternative),
-                            'obj_size': obj_size,
-                            'object_name': object_name,
-                        }
-                    )
+                    # files_found.append(
+                    #     {
+                    #         'last_modified': last_modified,
+                    #         #'obj_size': size(obj_size, system=alternative),
+                    #         'obj_size': obj_size,
+                    #         'object_name': object_name,
+                    #     }
+                    # )
                     files_found_txt+= (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
                     for i in range(11 - (len(human_readable_size(obj_size)))): # pre-pad for size
                         files_found_txt+= ' '
@@ -173,9 +143,7 @@ def get_new_filenames(s3, start_date, end_date):
                 count = count + 1
 
     print('count: {}'.format(count))
-    #print('files_found', files_found)
-    #print('files_found_txt')
-    print(files_found_txt)
+    #print(files_found_txt)
     return(files_found_txt)
 
 ########################################################################
@@ -187,21 +155,18 @@ def send_email(sns, files_found_txt):
     #topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
     print('topic_arn: {}'.format(topic_arn))
     subject = 'Wells Fargo TCD Dropbox'
-    #message = output_string
     message = files_found_txt
 
     # if no files, then send email with no files
     if len(files_found_txt) == 0:
         message = 'There are no files for the past 24 hours.'
 
-    #response = client.publish(
     response = sns.publish(
         TopicArn=topic_arn,
         Message=message,
         Subject=subject,
     )
     print(files_found_txt)
-    #pprint.pprint(response)
 
 ########################################################################
 # __main__
@@ -209,8 +174,6 @@ def send_email(sns, files_found_txt):
 
 if __name__ == '__main__':
     start_date, end_date = GetDate()
-    print('start_date3:', start_date)
-    print('end_date3:', end_date)
     s3, sns = boto3_session_main()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
     send_email(sns, files_found_txt)
