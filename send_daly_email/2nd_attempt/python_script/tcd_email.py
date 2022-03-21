@@ -16,8 +16,10 @@ import boto3        # For access to AWS
 ########################################################################
   
 def lambda_handler(event, context):
-    GetDate()
-    boto3_session_lambda()
+    start_date, end_date = GetDate()
+    s3, sns = boto3_session_lambda()
+    files_found_txt = get_new_filenames(s3, start_date, end_date)
+    send_email(sns, files_found_txt)
 
 ########################################################################
 # GetDate()
