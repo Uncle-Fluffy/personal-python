@@ -92,6 +92,17 @@ def boto3_session_lambda():
     return s3, sns
 
 ########################################################################
+# human_readable_size
+########################################################################
+
+def human_readable_size(size, decimal_places=0):
+    for unit in ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']:
+        if size < 1024.0 or unit == 'PB':
+            break
+        size /= 1024.0
+    return f"{size:.{decimal_places}f} {unit}"
+
+########################################################################
 # get_new_filenames
 ########################################################################
 
@@ -119,26 +130,28 @@ def get_new_filenames(s3, start_date, end_date):
         for obj in page['Contents']:
             obj_size = obj['Size']
             last_modified = obj['LastModified']
-            print('last_modified', last_modified)
-            print(type(last_modified))
+            #print('last_modified', last_modified)
+            #print(type(last_modified))
             if start_date < last_modified < end_date:
                 print('last_modified: {}'.format(last_modified))
-                print('obj_size: {}'.format(size(obj_size, system=alternative))) # toubleshooting line
+                #print('obj_size: {}'.format(size(obj_size, system=alternative))) # toubleshooting line
+                print('obj_size:', human_readable_size(obj_size)) # toubleshooting line
                 obj_key = obj['Key']
                 print('obj_key: {}'.format(obj_key)) # toubleshooting line
                 idx = obj_key.rfind('/')
                 object_name = obj_key[idx + 1:len(obj_key)]
                 print('object_name: {}'.format(object_name))
                 r1 = object_name.split('_')
-                print(len(r1)) # toubleshooting line
-                print(r1) # toubleshooting line
+                #print(len(r1)) # toubleshooting line
+                #print(r1) # toubleshooting line
                 try:
                     s1 = r1[2]
-                    print(s1) # toubleshooting line
+                    print('s1', s1) # toubleshooting line
                     files_found.append(
                         {
                             'last_modified': last_modified,
-                            'obj_size': size(obj_size, system=alternative),
+                            #'obj_size': size(obj_size, system=alternative),
+                            'obj_size': obj_size,
                             'object_name': object_name,
                         }
                     )
@@ -149,7 +162,8 @@ def get_new_filenames(s3, start_date, end_date):
                 count = count + 1
 
     print('count: {}'.format(count))
-
+    print('files_found', files_found)
+    
     # future
     # change
     #   home_path = '/tmp/output-' + str(cur_date) + '.csv' 
@@ -167,7 +181,7 @@ def get_new_filenames(s3, start_date, end_date):
 
 if __name__ == '__main__':
     start_date, end_date = GetDate()
-    # print('start_date3:', start_date)
-    # print('end_date3:', end_date)
-    # s3, sns = boto3_session_main()
-    # get_new_filenames(s3, start_date, end_date)
+    print('start_date3:', start_date)
+    print('end_date3:', end_date)
+    s3, sns = boto3_session_main()
+    get_new_filenames(s3, start_date, end_date)
