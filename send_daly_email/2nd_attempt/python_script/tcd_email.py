@@ -133,6 +133,7 @@ def get_new_filenames(s3, start_date, end_date):
             #print('last_modified', last_modified)
             #print(type(last_modified))
             if start_date < last_modified < end_date:
+                print() # blank line for clarity
                 print('last_modified: {}'.format(last_modified))
                 #print('obj_size: {}'.format(size(obj_size, system=alternative))) # toubleshooting line
                 print('obj_size:', human_readable_size(obj_size)) # toubleshooting line
@@ -141,12 +142,12 @@ def get_new_filenames(s3, start_date, end_date):
                 idx = obj_key.rfind('/')
                 object_name = obj_key[idx + 1:len(obj_key)]
                 print('object_name: {}'.format(object_name))
-                r1 = object_name.split('_')
+                #r1 = object_name.split('_') # finds the box used
                 #print(len(r1)) # toubleshooting line
                 #print(r1) # toubleshooting line
                 try:
-                    s1 = r1[2]
-                    print('s1', s1) # toubleshooting line
+                    #s1 = r1[2]
+                    #print('s1', s1) # toubleshooting line
                     files_found.append(
                         {
                             'last_modified': last_modified,
@@ -156,6 +157,7 @@ def get_new_filenames(s3, start_date, end_date):
                         }
                     )
                 except Exception as e:
+                    print("Exception***")
                     print(last_modified)
                     print(object_name)
                     print(e)
@@ -163,7 +165,7 @@ def get_new_filenames(s3, start_date, end_date):
 
     print('count: {}'.format(count))
     print('files_found', files_found)
-    
+
     # future
     # change
     #   home_path = '/tmp/output-' + str(cur_date) + '.csv' 
