@@ -10,10 +10,11 @@ import boto3        # For access to AWS
 
  
 def lambda_handler(event, context):
+    is_test = True              # False to send message to everyone True to send to testers
     start_date, end_date = GetDate()
     s3, sns = boto3_session_lambda()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
-    send_email(sns, files_found_txt)
+    send_email(sns, files_found_txt, is_test)
 
 
 def GetDate():
@@ -104,9 +105,11 @@ def get_new_filenames(s3, start_date, end_date):
     print(files_found_txt)
     return(files_found_txt)
 
-def send_email(sns, files_found_txt):
-    topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
-    #topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
+def send_email(sns, files_found_txt, is_test):
+    if is_test:
+        topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
+    else:
+        topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
     print('topic_arn: {}'.format(topic_arn))
     subject = 'Wells Fargo TCD Dropbox'
     message = files_found_txt
@@ -123,7 +126,10 @@ def send_email(sns, files_found_txt):
 
 
 if __name__ == '__main__':
+    is_sendmail = False         # Should I actualy send a message?
+    is_test = True              # False to send message to everyone, True to send to testers
     start_date, end_date = GetDate()
     s3, sns = boto3_session_main()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
-    send_email(sns, files_found_txt)
+    if is_sendmail:
+        send_email(sns, files_found_txt, is_test)
