@@ -3,27 +3,19 @@
 # Core code from Connor Reid
 # 3/16/2022 Modified by Terry Carter
  
-########################################################################
-# Init / Include
-########################################################################
 import sys          # For user input when ran directly
 import datetime     # For date calculations        
 import time         # For current date/time calculations
 import boto3        # For access to AWS
 
-########################################################################
-# lambda_handler
-########################################################################
-  
+ 
 def lambda_handler(event, context):
+    is_test = True              # False to send message to everyone True to send to testers
     start_date, end_date = GetDate()
     s3, sns = boto3_session_lambda()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
-    send_email(sns, files_found_txt)
+    send_email(sns, files_found_txt, is_test)
 
-########################################################################
-# GetDate()
-########################################################################
 
 def GetDate():
     if len(sys.argv) == 7:      # if start and end dates are given
@@ -53,19 +45,11 @@ def GetDate():
     print('end_date: {}'.format(end_date))
     return start_date, end_date
 
-#########################################################################
-# boto3_session_main
-#########################################################################
-
 def boto3_session_main():
     session = boto3.Session(profile_name='exp-devsecops')
     s3 = session.client('s3', region_name='us-west-2')
     sns = session.client('sns', region_name='us-east-1')
     return s3, sns
-
-#########################################################################
-# boto3_session_lambda
-#########################################################################
 
 def boto3_session_lambda():
     bucket_name = 'exptransmission'
@@ -73,20 +57,12 @@ def boto3_session_lambda():
     sns = boto3.client('sns', region_name='us-east-1')
     return s3, sns
 
-########################################################################
-# human_readable_size
-########################################################################
-
 def human_readable_size(size, decimal_places=0):
     for unit in ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']:
         if size < 1024.0 or unit == 'PB':
             break
         size /= 1024.0
     return str(f"{size:.{decimal_places}f} {unit}")
-
-########################################################################
-# get_new_filenames
-########################################################################
 
 def get_new_filenames(s3, start_date, end_date):
     bucket_name = 'exptransmission'
@@ -111,12 +87,12 @@ def get_new_filenames(s3, start_date, end_date):
                 idx = obj_key.rfind('/')
                 object_name = obj_key[idx + 1:len(obj_key)] 
                 try:
-                    files_found_txt+= (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) # Add modification date stamp
-                    for i in range(11 - (len(human_readable_size(obj_size)))): # pre-pad for size
-                        files_found_txt+= ' '
-                    files_found_txt+= human_readable_size(obj_size) # Add file size
-                    files_found_txt+= ' ' + object_name # add file name
-                    files_found_txt+= '\r\n' # Add carriage return/line feed
+                    files_found_txt += (datetime.datetime.strftime(last_modified, '%Y-%m-%d %H:%M:%S%z')) 
+                    for i in range(11 - (len(human_readable_size(obj_size)))): 
+                        files_found_txt += ' '
+                    files_found_txt += human_readable_size(obj_size) 
+                    files_found_txt += ' ' + object_name 
+                    files_found_txt += '\r\n' 
 
                 except Exception as e:
                     print("Exception***")
@@ -129,13 +105,11 @@ def get_new_filenames(s3, start_date, end_date):
     print(files_found_txt)
     return(files_found_txt)
 
-########################################################################
-# send_email
-########################################################################
-
-def send_email(sns, files_found_txt):
-    topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
-    #topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
+def send_email(sns, files_found_txt, is_test):
+    if is_test:
+        topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
+    else:
+        topic_arn = 'arn:aws:sns:us-east-1:204048894727:tcd_daily_email'   # regular email to devops et. all
     print('topic_arn: {}'.format(topic_arn))
     subject = 'Wells Fargo TCD Dropbox'
     message = files_found_txt
@@ -145,17 +119,17 @@ def send_email(sns, files_found_txt):
         message = 'There are no files for the past 24 hours.'
 
     response = sns.publish(
-        TopicArn=topic_arn,
-        Message=message,
-        Subject=subject,
+        TopicArn = topic_arn,
+        Message = message,
+        Subject = subject
     )
 
-########################################################################
-# __main__
-########################################################################
 
 if __name__ == '__main__':
+    is_sendmail = False         # Should I actualy send a message?
+    is_test = True              # False to send message to everyone, True to send to testers
     start_date, end_date = GetDate()
     s3, sns = boto3_session_main()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
-    send_email(sns, files_found_txt)
+    if is_sendmail:
+        send_email(sns, files_found_txt, is_test)
