@@ -10,14 +10,20 @@ import boto3        # For access to AWS
 
  
 def lambda_handler(event, context):
+    """Profile and steps for running from lambda"""
     is_test = True              # False to send message to everyone True to send to testers
-    start_date, end_date = GetDate()
+    start_date, end_date = get_date()
     s3, sns = boto3_session_lambda()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
     send_email(sns, files_found_txt, is_test)
 
 
-def GetDate():
+def get_date():
+    """Compute the date range to search for
+    if 2 dates are given, convert both to datetime.datetime
+    if 1 date is given, compute the following date and convert
+    if no date is given, define yesterday with the dates
+    Return start and end dates"""
     if len(sys.argv) == 7:      # if start and end dates are given
         year = int(sys.argv[1])
         month = int(sys.argv[2])
@@ -46,18 +52,21 @@ def GetDate():
     return start_date, end_date
 
 def boto3_session_main():
+    """Define boto3 sessions for s3 and sns access if running the script directly"""
     session = boto3.Session(profile_name='exp-devsecops')
     s3 = session.client('s3', region_name='us-west-2')
     sns = session.client('sns', region_name='us-east-1')
     return s3, sns
 
 def boto3_session_lambda():
+    """define boto3 sessions for s3 and sns access if running the script from lambda"""
     bucket_name = 'exptransmission'
     s3 = boto3.client('s3', region_name='us-west-2')
     sns = boto3.client('sns', region_name='us-east-1')
     return s3, sns
 
 def human_readable_size(size, decimal_places=0):
+    """Pad the byte sizes scraped from s3 to match what TCD has had historically"""
     for unit in ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB']:
         if size < 1024.0 or unit == 'PB':
             break
@@ -65,6 +74,10 @@ def human_readable_size(size, decimal_places=0):
     return str(f"{size:.{decimal_places}f} {unit}")
 
 def get_new_filenames(s3, start_date, end_date):
+    """Search for files that were added to the s3 bucket during the time specified
+    Capture the date/time, size of the file and the file name with path
+    Format into columns as historically done
+    Return the string with the formatted results"""
     bucket_name = 'exptransmission'
     paginator = s3.get_paginator('list_objects')
     page_iterator = paginator.paginate(Bucket=bucket_name)
@@ -106,6 +119,7 @@ def get_new_filenames(s3, start_date, end_date):
     return(files_found_txt)
 
 def send_email(sns, files_found_txt, is_test):
+    """email files_found_txt to an sns topic"""
     if is_test:
         topic_arn = 'arn:aws:sns:us-east-1:204048894727:test-tcd-daily-email'  # devsecops, change subscriptions for testers
     else:
@@ -126,9 +140,10 @@ def send_email(sns, files_found_txt, is_test):
 
 
 if __name__ == '__main__':
+    """Profile setup if running locally"""
     is_sendmail = False         # Should I actualy send a message?
     is_test = True              # False to send message to everyone, True to send to testers
-    start_date, end_date = GetDate()
+    start_date, end_date = get_date()
     s3, sns = boto3_session_main()
     files_found_txt = get_new_filenames(s3, start_date, end_date)
     if is_sendmail:
