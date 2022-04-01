@@ -1,0 +1,76 @@
+# This code did actually work and pass
+# Many variables had to be set up beforehand like the path to the actual file
+# But the structure is great for reference
+# You must 'pip install pytest' before running
+
+-import sys # Required to navigate into other folders
+-sys.path.append("..") # Enables path to peer python folder
+-from send_daily_email.tcd_email import get_date
+-from send_daily_email.tcd_email import human_readable_size
+-import datetime
+-
+-def test_start_date_dual():
+-    # Arrange
+-    event = {"dates": "2022 01 01 2022 01 02"}
+-
+-    # Act
+-    start_date, end_date = get_date(event)
+-
+-    # Assert
+-    assert type(start_date) == datetime.datetime
+-    assert start_date.strftime('%Y-%m-%d %H:%M:%S%z') == "2022-01-01 00:00:00+0000"
+-    assert type(end_date) == datetime.datetime
+-    assert end_date.strftime('%Y-%m-%d %H:%M:%S%z') == "2022-01-02 00:00:00+0000"
+-
+-def test_start_date_single():
+-    # Arrange
+-    event = {"dates": "2022 01 01"}
+-
+-    # Act
+-    start_date, end_date = get_date(event)
+-
+-    # Assert
+-    assert type(start_date) == datetime.datetime
+-    assert start_date.strftime('%Y-%m-%d %H:%M:%S%z') == "2022-01-01 00:00:00+0000"
+-    assert type(end_date) == datetime.datetime
+-    assert end_date.strftime('%Y-%m-%d %H:%M:%S%z') == "2022-01-02 00:00:00+0000"
+-
+-def test_human_readable_size_bytes():
+-    # Arrange
+-    bytes = 2
+-
+-    # Act
+-    formatted_bytes = human_readable_size(bytes)
+-
+-    # Assert
+-    assert formatted_bytes == "2 Bytes"
+-
+-def test_human_readable_size_kbytes():
+-    # Arrange
+-    bytes = 2048
+-
+-    # Act
+-    formatted_bytes = human_readable_size(bytes)
+-
+-    # Assert
+-    assert formatted_bytes == "2 KB"
+-
+-def test_human_readable_size_mbytes():
+-    # Arrange
+-    bytes = 2000000
+-
+-    # Act
+-    formatted_bytes = human_readable_size(bytes)
+-
+-    # Assert
+-    assert formatted_bytes == "2 MB"
+-
+-def test_human_readable_size_gbytes():
+-    # Arrange
+-    bytes = 2000000000
+-
+-    # Act
+-    formatted_bytes = human_readable_size(bytes)
+-
+-    # Assert
+-    assert formatted_bytes == "2 GB"
