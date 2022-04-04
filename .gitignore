@@ -69,3 +69,6 @@ tg-plan-all.txt
 .terraform.lock.hcl
 privkey
 tg-run-all-plan.out
+
+# Virtual Environments
+venv
