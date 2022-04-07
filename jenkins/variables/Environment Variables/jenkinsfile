@@ -1,0 +1,12 @@
+''' from https://www.jenkins.io/doc/book/pipeline/jenkinsfile/#using-environment-variables'''
+
+pipeline {
+    agent any
+    stages {
+        stage('Example') {
+            steps {
+                echo "Build number ${env.BUILD_NUMBER}"
+            }
+        }
+    }
+}
