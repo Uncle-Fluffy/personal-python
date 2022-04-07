@@ -1,0 +1,19 @@
+pipeline{
+    agent any
+
+    parameters {
+        string(defaultValue: "Default Deployment Name", description: "Custom deployment name?", name: "deployName")
+        choice(choices: ["EU-WEST-2A", "EU-WEST-2B", "EU-WEST-2C"], description: "Which AZ to deploy in?", name: "deployAZ")
+        booleanParam(defaultValue: false, description: "Enable Deployment?", name: "enableDeploy")
+    }
+
+    stages {
+        stage("Demo"){
+            steps{
+                echo "String  is set to: ${params.deployName}"
+                echo "Choice  is set to: ${params.deployAZ}"
+                echo "Choice  is set to: ${params.enableDeploy}"
+            }
+        }
+    }
+}
