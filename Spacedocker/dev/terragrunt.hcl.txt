@@ -1,0 +1,46 @@
+ 
+    ADD_UPDATE_OFFICE_EXECUTION_ROLE_NAME = "spacedocker-addUpdateOfficeExecutionRole"
+    ADD_UPDATE_OFFICE_LAMBDA_NAME = "spacedocker-addUpdateOffice"
+    API_GATEWAY_NAME = "spacedocker-restapi"
+    API_STAGE_NAME = "v1"
+    AUTH_FUNCTION_NAME = "spacedocker-oAuthTokenAuthorizer"
+    BUCKET_NAME = "spacedocker-static-assets"
+    *CAPABILITIES = "CAPABILITY_NAMED_IAM"
+    *DATA_MIGRATION_BUCKET_NAME = "enterprise-exporteddata"
+    
+    DB_INSTANCE_CLASS = "db.t3.medium"
+    DB_INSTANCE_IDENTIFIER = "spacedocker-dev"
+    DB_NAME = local.constants.name
+    DB_PASSWORD = "TestPassword1"
+    DB_SECURITY_GROUP_NAME = "spacedocker-rdsSecurityGroup"
+    DB_USERNAME = "postgres"
+    ENV = local.constants.env
+    IMPORT_ROLE_NAME = "spacedocker-dataImportRole"
+    LAMBDA_FUNCTION_NAME = "spacedocker-backend"
+    LAMBDA_FUNCTION_ROLE_NAME = "spacedocker-lambdaExecutionRole"
+    LAMBDA_SECURITY_GROUP_NAME = "spacedocker-lambdaSecurityGroup"
+    LAMBDA_VPC_ENDPOINT_OVERRIDE = "vpce-07683c6a04d909a13-ncoe4l5m.lambda.us-east-1.vpce.amazonaws.com"
+    LAMBDA_VPC_ENDPOINT_SERVICE_NAME = "com.amazonaws.us-east-1.lambda"
+    LOCAL_API_GATEWAY_NAME = "spacedocker-restapi-local"
+    LOCAL_AUTH_FUNCTION_NAME = "spacedocker-oAuthTokenAuthorizer-local"
+    LOCAL_OKTA_CLIENT_ID = "0oaz4invq6GYgXdkP0h7"
+    LOCAL_OKTA_DOMAIN = "exprealty.oktapreview.com"
+    OKTA_CLIENT_ID = "0oaypswet8hPR2QYb0h7"
+    OKTA_DOMAIN = "exprealty.oktapreview.com"
+    PUBLIC_API_GATEWAY_NAME = "spacedocker-restapi-public"
+    PUBLIC_API_STAGE_NAME = "rest"
+    PUBLIC_USAGE_PLAN_NAME = "spacedocker-basic"
+    QUEUE_NAME = "spacedocker-addUpdateOfficeQueue"
+    REGION = "us-east-1"
+    S3_BUCKET = "aws-sam-cli-managed-default-samclisourcebucket-1uazlhdrdom2x" # this is the same for all Dev SAM apps in the us-east-1 region
+    S3_PREFIX = local.constants.name
+    SQS_DISPATCH_FUNCTION_NAME = "spacedocker-sqsDispatcher"
+    SQS_VPC_ENDPOINT_OVERRIDE = "vpce-0e64983019d565b6e-cvcrrowu.sqs.us-east-1.vpce.amazonaws.com"
+    STACK_NAME = local.constants.name
+    SUBNET_1A_ID = "subnet-04636e0ad9b06cb85"
+    SUBNET_1B_ID = "subnet-03d692d7da7e7858d"
+    SUBNET_1C_ID = "subnet-02a3db7f085d68297"
+    TRANSIT_GATEWAY_ID = "tgw-050bd803119b5c36b"
+    VPC_ENDPOINT_SERVICE_NAME = "com.amazonaws.us-east-1.sqs"
+    VPC_ID = "vpc-0b08272a4717d6833"
+
